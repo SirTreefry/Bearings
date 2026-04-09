@@ -1,0 +1,39 @@
+%Andrew Trefry
+%Test Bearing Data
+          
+%Test Data Sequence comes in sets of 5 minutes of data
+
+%Bearing Steady State Frequencies
+%====================================================
+
+%rpm
+RPM = 2000;
+%number of balls
+n = 10;
+%contact angle
+B = 19;
+%Pitch Diameter
+D = 1.2;
+
+
+BPFO = 
+
+
+
+chan1 = importdata("2003.10.22.12.06.24");
+
+figure()
+plot(chan1);
+xlabel('Time (s)');
+ylabel('Amplitude');
+title('Bearing Data');
+grid on;
+
+Fs = 20000;            % Sampling frequency                    
+T = 1/Fs;             % Sampling period       
+L = 20408;             % Length of signal
+t = (0:L-1)*T;        % Time vector
+FFT_data = fft(chan1(1:20408,1));
+
+figure()
+plot(Fs/L*(0:L-1),abs(FFT_data),"LineWidth",3)
