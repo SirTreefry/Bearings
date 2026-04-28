@@ -1,0 +1,51 @@
+import math 
+import numpy as np
+import pandas as pd
+#Bearings Test Data
+#Test Section Run 1, Pump Operation
+
+#=============================================
+#Bearing Elements
+#=============================================
+#n shaft rotational speed
+#N number of rolling elements
+#B_d diameter of rolling element
+#P_d pitch diameter
+#Phi Contact angle
+
+
+N = 16
+n = 2000
+B_d = .331
+P_d = 2.8915
+phi = 15.17*math.pi/180
+
+
+
+#=============================================
+#Bearing Fundamentall Frequencies
+#=============================================
+#(BPFI) Ball Pass Frequency Inner
+#(BPFO) Ball Pass frequency Outer
+#(BSF) Ball Spin Frequency
+#(FTF) Fudamental Train Frequency
+
+BPFI = (N/2)*(1 + B_d/P_d * np.cos(phi))*n
+
+BPFO = (N/2)*(1 - B_d/P_d * np.cos(phi))*n
+
+BSF = (P_d/(2*B_d))*(1 - ((B_d/P_d)*np.cos(phi))**2)*n
+
+FTF = (1/2)*(1 - (B_d/P_d)*np.cos(phi))*n
+
+print("BPFI=%d" % (BPFI))
+print("BPFO=%d" % (BPFO))
+print("BSF=%d" % (BSF))
+print("FTF=%d" % (FTF))
+
+
+
+#Anylasis of Bearing Channel 1
+df = pd.read_csv("C:\\Users\\trefr\\OneDrive - University of Central Florida\\Desktop\\bearings\\1st_test\\2003.10.22.12.06.24",sep='\t')
+data = np.loadtxt('C:\\Users\\trefr\\OneDrive - University of Central Florida\\Desktop\\bearings\\1st_test\\2003.10.22.12.06.24', delimiter='r')
+print(df)
