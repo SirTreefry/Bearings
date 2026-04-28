@@ -45,7 +45,41 @@ print("FTF=%d" % (FTF))
 
 
 
-#Anylasis of Bearing Channel 1
+#Anylasis of Bearing set 1
 df = pd.read_csv("C:\\Users\\trefr\\OneDrive - University of Central Florida\\Desktop\\bearings\\1st_test\\2003.10.22.12.06.24",sep='\t')
-data = np.loadtxt('C:\\Users\\trefr\\OneDrive - University of Central Florida\\Desktop\\bearings\\1st_test\\2003.10.22.12.06.24', delimiter='r')
-print(df)
+df.columns = ['B1_ch1', 'B1_ch2', 'B2_ch1', 'B2_ch2', 'B3_ch1', 'B3_ch2', 'B4_ch1', 'B4_ch2']
+
+print(df['B1_ch1'])
+
+#Bearing 1s channels
+col1 = []
+col2 = []
+
+#Bearing 2s channels
+col3 = []
+col4 = []
+
+#Bearing 3s channels
+col5 = []
+col6 = []
+
+#Bearing 4s channels
+col7 = []
+col8 = []
+
+
+with open('C:\\Users\\trefr\\OneDrive - University of Central Florida\\Desktop\\bearings\\1st_test\\2003.10.22.12.06.24', 'r') as f:
+    #data = (f.read())
+    #print(data)
+    for line in f:
+        first, second, third,fourth,fifth,sixth,seventh,eight = line.split()
+        col1.append(first)
+        col2.append(second)
+        col3.append(third)
+        col4.append(fourth)
+        col5.append(fifth)
+        col6.append(sixth)
+        col7.append(seventh)
+        col8.append(eight)
+
+#print(col1)
