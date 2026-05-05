@@ -1,6 +1,9 @@
 import math 
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.signal import hilbert
+
 #Bearings Test Data
 #Test Section Run 1, Pump Operation
 
@@ -51,6 +54,12 @@ df.columns = ['B1_ch1', 'B1_ch2', 'B2_ch1', 'B2_ch2', 'B3_ch1', 'B3_ch2', 'B4_ch
 
 print(df['B1_ch1'])
 
+
+
+#Plot using numpy not using effectviley
+#==========================================
+#==========================================
+
 #Bearing 1s channels
 col1 = []
 col2 = []
@@ -83,3 +92,89 @@ with open('C:\\Users\\trefr\\OneDrive - University of Central Florida\\Desktop\\
         col8.append(eight)
 
 #print(col1)
+
+
+#==========================================================
+#==========================================================
+
+
+Fs = 20479          # Sampling frequency                    
+T = 1/Fs            # Sampling period       
+L = 20479           # Length of signal
+                    # Time vector
+
+fft_ch1 = np.fft.fft(df['B1_ch1'])
+frequencies = np.fft.fftfreq(Fs, d=T)
+positive_mask = frequencies > 0
+freq_plot = frequencies[positive_mask]
+mag_plot = np.abs(fft_ch1)[positive_mask]
+
+
+
+#Hilbert Envelop
+#hilbert_window = hilbert(df['B1_ch1'] - df['B1_ch1'].mean())
+hilbert_window = hilbert(df['B1_ch1'])
+envelope = np.abs(hilbert_window)
+
+
+
+#FFT calculations of envelop
+frequenciesh = np.fft.fftfreq(len(envelope), d=T)
+positive_maskh = frequenciesh > 0
+freq_ploth = frequenciesh[positive_maskh]
+
+
+
+envelope_centered = envelope - envelope.mean()  # add this
+fft_envelope = np.fft.fft(envelope_centered)
+fft_envelope_mag = np.abs(fft_envelope)[positive_maskh]
+
+
+#Function that finds the maximum freqeuncy possible
+#=======================================================
+max_idx = np.argmax(fft_envelope_mag)  
+print("Max Hz=%d" % max_idx)
+
+
+
+
+
+#Plots adressed
+#====================================================
+
+plt.figure(figsize=(7,5))
+plt.plot(range(20479),df['B1_ch1'])
+# naming the x and y axis
+plt.ylabel('Signal Amplitude')
+plt.xlabel('HZ')
+plt.show()
+
+plt.figure(figsize=(7,5))
+plt.plot(range(20479),fft_ch1)
+# naming the x and y axis
+plt.ylabel('Signal Amplitude')
+plt.xlabel('HZ')
+plt.show()
+
+plt.figure(figsize=(7,5))
+plt.plot(freq_plot,mag_plot)
+# naming the x and y axis
+plt.ylabel('Signal Amplitude')
+plt.xlabel('HZ')
+plt.show()
+
+plt.figure(figsize=(7,5))
+plt.plot(range(20479),envelope)
+# naming the x and y axis
+plt.ylabel('Signal Amplitude')
+plt.xlabel('HZ')
+plt.show()
+
+plt.figure(figsize=(7,5))
+plt.plot(freq_ploth,fft_envelope_mag)
+# naming the x and y axis
+plt.ylabel('Signal Amplitude')
+plt.xlabel('HZ')
+plt.show()
+
+
