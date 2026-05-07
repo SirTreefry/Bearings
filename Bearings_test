@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.signal import hilbert
-
+import os
 #Bearings Test Data
 #Test Section Run 1, Pump Operation
 
@@ -49,11 +49,13 @@ print("FTF=%d" % (FTF))
 
 
 #Anylasis of Bearing set 1
+#=================================================================
+#=================================================================
+
+
+#Opening of data set 1 file 1 done only once
 df = pd.read_csv("C:\\Users\\trefr\\OneDrive - University of Central Florida\\Desktop\\bearings\\1st_test\\2003.10.22.12.06.24",sep='\t')
 df.columns = ['B1_ch1', 'B1_ch2', 'B2_ch1', 'B2_ch2', 'B3_ch1', 'B3_ch2', 'B4_ch1', 'B4_ch2']
-
-print(df['B1_ch1'])
-
 
 
 #Plot using numpy not using effectviley
@@ -77,23 +79,48 @@ col7 = []
 col8 = []
 
 
-with open('C:\\Users\\trefr\\OneDrive - University of Central Florida\\Desktop\\bearings\\1st_test\\2003.10.22.12.06.24', 'r') as f:
+#Storing name of all the files in this specified directory
+data_dir = "C:\\Users\\trefr\\OneDrive - University of Central Florida\\Desktop\\bearings\\1st_test\\"
+results = os.listdir(data_dir)
+results_sorted = sorted(results, key=None, reverse=False)
+
+
+
+for i in range(len(results)):
+    filname = results_sorted[i]
+    filepath = os.path.join(data_dir ,results_sorted[i])
+
+    df = pd.read_csv(filepath,sep='\t')
+
+    df.columns = ['B1_ch1', 'B1_ch2', 'B2_ch1', 'B2_ch2', 'B3_ch1', 'B3_ch2', 'B4_ch1', 'B4_ch2']
+
+    col1.append(df['B1_ch1'])
+
+
+
+
+
+#Archaic code will read later
+#with open('C:\\Users\\trefr\\OneDrive - University of Central Florida\\Desktop\\bearings\\1st_test\\2003.10.22.12.06.24', 'r') as f:
     #data = (f.read())
     #print(data)
-    for line in f:
-        first, second, third,fourth,fifth,sixth,seventh,eight = line.split()
-        col1.append(first)
-        col2.append(second)
-        col3.append(third)
-        col4.append(fourth)
-        col5.append(fifth)
-        col6.append(sixth)
-        col7.append(seventh)
-        col8.append(eight)
+    #for line in f:
+     #   first, second, third,fourth,fifth,sixth,seventh,eight = line.split()
+      #  col1.append(first)
+       # col2.append(second)
+        #col3.append(third)
+        #col4.append(fourth)
+        #col5.append(fifth)
+        #col6.append(sixth)
+        #col7.append(seventh)
+        #col8.append(eight)
 
 #print(col1)
 
 
+
+#Function that finds the maximum freqeuncy possible (first 10 sets)
+#=======================================================
 #==========================================================
 #==========================================================
 
@@ -103,37 +130,124 @@ T = 1/Fs            # Sampling period
 L = 20479           # Length of signal
                     # Time vector
 
-fft_ch1 = np.fft.fft(df['B1_ch1'])
-frequencies = np.fft.fftfreq(Fs, d=T)
-positive_mask = frequencies > 0
-freq_plot = frequencies[positive_mask]
-mag_plot = np.abs(fft_ch1)[positive_mask]
+
+fft_list = []
+hil_list = []
+for i in range(15):
+    fft_ch1 = np.fft.fft(col1[i])
+    frequencies = np.fft.fftfreq(Fs, d=T)
+    positive_mask = frequencies > 0
+    freq_plot = frequencies[positive_mask]
+    mag_plot = np.abs(fft_ch1)[positive_mask]
 
 
 
-#Hilbert Envelop
-#hilbert_window = hilbert(df['B1_ch1'] - df['B1_ch1'].mean())
-hilbert_window = hilbert(df['B1_ch1'])
-envelope = np.abs(hilbert_window)
+    #Hilbert Envelop
+    #hilbert_window = hilbert(df['B1_ch1'] - df['B1_ch1'].mean())
+    hilbert_window = hilbert(col1[i])
+    envelope = np.abs(hilbert_window)
 
 
 
-#FFT calculations of envelop
-frequenciesh = np.fft.fftfreq(len(envelope), d=T)
-positive_maskh = frequenciesh > 0
-freq_ploth = frequenciesh[positive_maskh]
+    #FFT calculations of envelop
+    frequenciesh = np.fft.fftfreq(len(envelope), d=T)
+    positive_maskh = frequenciesh > 0
+    freq_ploth = frequenciesh[positive_maskh]
 
 
 
-envelope_centered = envelope - envelope.mean()  # add this
-fft_envelope = np.fft.fft(envelope_centered)
-fft_envelope_mag = np.abs(fft_envelope)[positive_maskh]
+    envelope_centered = envelope - envelope.mean()  # add this
+    fft_envelope = np.fft.fft(envelope_centered)
+    fft_envelope_mag = np.abs(fft_envelope)[positive_maskh]
+
+    mean  = 0
 
 
-#Function that finds the maximum freqeuncy possible
-#=======================================================
-max_idx = np.argmax(fft_envelope_mag)  
-print("Max Hz=%d" % max_idx)
+    max_idx_fft = np.argmax(fft_ch1)  
+    max_idx = np.argmax(fft_envelope_mag)  
+   
+    print("Max FFT %d"% max_idx_fft)
+    print("Max Hz=%d" % max_idx)
+    
+    #mean calculations for fault anylasis
+    mean_h = mean + max_idx
+    mean_fft = mean + max_idx_fft
+
+    fft_list.append(max_idx_fft)
+    hil_list.append(max_idx)
+
+
+#mean baseline data points
+mean_h = mean_h/15
+mean_fft = mean_fft/15
+
+#Baseline standrad devations
+fft_std = np.std(fft_list)
+h_std = np.std(hil_list)
+
+print("FFT STD %d"% fft_std)
+print("Hilbert STD %d"% h_std)
+
+
+
+
+#Total Statsical loop through to identify bearing freqeucny failure occuring
+#===================================================================================
+#===================================================================================
+
+
+fft_list_total = []
+hil_list_total = []
+for i in range(len(results)):
+    fft_ch1 = np.fft.fft(col1[i])
+    frequencies = np.fft.fftfreq(Fs, d=T)
+    positive_mask = frequencies > 0
+    freq_plot = frequencies[positive_mask]
+    mag_plot = np.abs(fft_ch1)[positive_mask]
+
+
+
+    #Hilbert Envelop
+    #hilbert_window = hilbert(df['B1_ch1'] - df['B1_ch1'].mean())
+    hilbert_window = hilbert(col1[i])
+    envelope = np.abs(hilbert_window)
+
+
+
+    #FFT calculations of envelop
+    frequenciesh = np.fft.fftfreq(len(envelope), d=T)
+    positive_maskh = frequenciesh > 0
+    freq_ploth = frequenciesh[positive_maskh]
+
+
+
+    envelope_centered = envelope - envelope.mean()  # add this
+    fft_envelope = np.fft.fft(envelope_centered)
+    fft_envelope_mag = np.abs(fft_envelope)[positive_maskh]
+
+    mean  = 0
+
+
+    max_idx_fft = np.argmax(fft_ch1)  
+    max_idx = np.argmax(fft_envelope_mag)  
+   
+    
+    
+    
+
+
+    fft_list_total.append(max_idx_fft)
+    hil_list_total.append(max_idx)
+
+    if max_idx in range(1000,1020):
+        print('safe')
+    else:
+        print("Iteration number %d"% i)
+        iteration_num = i
+        break    
+        
+
+
 
 
 
@@ -143,7 +257,7 @@ print("Max Hz=%d" % max_idx)
 #====================================================
 
 plt.figure(figsize=(7,5))
-plt.plot(range(20479),df['B1_ch1'])
+plt.plot(range(20479),col1[iteration_num])
 # naming the x and y axis
 plt.ylabel('Signal Amplitude')
 plt.xlabel('HZ')
